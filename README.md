@@ -36,6 +36,24 @@ conda env create -f environment.yml
 conda activate fbxw7-manuscript
 ```
 
+If the environment already exists, update it after changes to `environment.yml`:
+
+```bash
+conda env update -f environment.yml --prune
+```
+
+VALIS uses Java, so `openjdk` is included. VALIS also imports `pyvips`, which needs the native `libvips` library. Both `pyvips` and `libvips` are installed from Conda in this environment. If step 4 fails with `cannot load library 'libvips.42.dylib'`, run:
+
+```bash
+conda install -c conda-forge pyvips libvips
+```
+
+VALIS 1.2.0 currently expects an older scikit-image behavior when saving overlap-cropped registered slides. The environment pins `scikit-image<0.26`. If step 4 fails inside `SimilarityTransform(scale=sxy)` with `The truth value of an array with more than one element is ambiguous`, run:
+
+```bash
+conda install -c conda-forge "scikit-image<0.26"
+```
+
 ## Configuration
 
 All scripts accept the same optional config argument:

@@ -1,0 +1,33 @@
+name: fbxw7
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.11
+  - pip
+  - openjdk
+  - numpy
+  - pandas
+  - scipy
+  - statsmodels
+  - matplotlib
+  - anndata
+  - scanpy
+  - squidpy
+  - napari
+  - magicgui
+  - tifffile
+  - libvips
+  - pyvips
+  - "scikit-image<0.26"
+  - opencv
+  - pillow
+  - tqdm
+  - pytorch
+  - torchvision
+  - pyyaml
+  - jupyterlab
+  - ipykernel
+  - pip:
+      - timm
+      - valis-wsi

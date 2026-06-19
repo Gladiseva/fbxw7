@@ -7,3 +7,6 @@
 /spatial_stats_results_marker_status
 /valis_registered_crops
 .DS_Store
+__pycache__/
+*.pyc
+.ipynb_checkpoints/

@@ -5,7 +5,14 @@ import pandas as pd
 from scipy.stats import ttest_1samp
 from statsmodels.stats.multitest import multipletests
 
-STATS_DIR = "/Users/lollija/phd/fbxw7/spatial_stats_results_marker_status"
+from config_utils import load_config, parse_config_arg, resolve_path
+
+
+args = parse_config_arg("Calculate cross-sample significance for spatial enrichment matrices.")
+config = load_config(args.config)
+
+STATS_DIR = resolve_path(config, "spatial_stats_dir")
+MIN_SAMPLES_FOR_PVALUE = config["significance"]["min_samples_for_pvalue"]
 
 def calculate_proper_cohort_significance():
     print("Loading per-sample Z-score matrices...")
@@ -63,8 +70,8 @@ def calculate_proper_cohort_significance():
             mean_z = np.mean(z_array)
             std_z = np.std(z_array, ddof=1) if k > 1 else np.nan
             
-            # Only calculate P-values if N >= 3 biological replicates exist
-            if k >= 3:
+            # Only calculate P-values if enough biological replicates exist
+            if k >= MIN_SAMPLES_FOR_PVALUE:
                 # 1-sample t-test checking if the mean Z-score is significantly != 0
                 stat, p_val = ttest_1samp(z_array, popmean=0.0)
             else:

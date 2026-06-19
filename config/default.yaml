@@ -1,0 +1,79 @@
+project_root: ..
+
+paths:
+  annotation_dir: annotation
+  crops_dir: crops
+  results_per_sample_dir: results_per_sample
+  valis_registered_crops_dir: valis_registered_crops
+  results_per_sample_valis_coords_dir: results_per_sample_valis_coords
+  results_per_sample_valis_plots_dir: results_per_sample_valis_plots
+  spatial_stats_dir: spatial_stats_results_marker_status
+  plots_dir: plots
+
+analysis:
+  markers:
+    - FBXW7
+    - MYC
+    - NICD
+  patch_size: 224
+
+feature_extraction:
+  model_name: hf_hub:JWonderLand/StainNet-Base
+  batch_size: 32
+  bg_threshold: 250
+  mask_overlap_frac: 0.50
+  pca_rank: 128
+  pca_niter: 4
+  n_neighbors: 15
+  leiden_resolution: 0.5
+
+annotation_ui:
+  labels:
+    - unannotated
+    - mixed
+    - high
+    - low
+    - medium
+    - medium to high
+    - low to medium
+    - not tumor
+  cluster_colors:
+    - "#1f77b4"
+    - "#ff7f0e"
+    - "#2ca02c"
+    - "#d62728"
+    - "#9467bd"
+    - "#8c564b"
+    - "#e377c2"
+    - "#7f7f7f"
+    - "#bcbd22"
+    - "#17becf"
+    - "#aec7e8"
+    - "#ffbb78"
+    - "#98df8a"
+    - "#ff9896"
+    - "#c5b0d5"
+    - "#c49c94"
+    - "#f7b6d2"
+    - "#c7c7c7"
+    - "#dbdb8d"
+    - "#9edae5"
+
+registration:
+  reference_marker: FBXW7
+  crop_mode: overlap
+
+valis_warp:
+  crop: overlap
+  use_non_rigid: true
+  marker_colors:
+    FBXW7: tab:blue
+    MYC: tab:orange
+    NICD: tab:green
+
+spatial_stats:
+  radius_multiplier: 2
+  exclude_annotation: not tumor
+
+significance:
+  min_samples_for_pvalue: 3

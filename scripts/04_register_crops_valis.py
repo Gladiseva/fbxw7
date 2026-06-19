@@ -5,13 +5,18 @@ import traceback
 
 from valis import registration
 
+from config_utils import get_markers, load_config, parse_config_arg, resolve_path
 
-CROPS_DIR = "/Users/lollija/phd/fbxw7/crops"
-BASE_OUTPUT_DIR = "/Users/lollija/phd/fbxw7/valis_registered_crops"
 
-MARKERS = ["FBXW7", "MYC", "NICD"]
-REFERENCE_MARKER = "FBXW7"
-CROP_MODE = "overlap"
+args = parse_config_arg("Register marker crop triplets with VALIS.")
+config = load_config(args.config)
+
+CROPS_DIR = resolve_path(config, "crops_dir")
+BASE_OUTPUT_DIR = resolve_path(config, "valis_registered_crops_dir")
+
+MARKERS = get_markers(config)
+REFERENCE_MARKER = config["registration"]["reference_marker"]
+CROP_MODE = config["registration"]["crop_mode"]
 
 
 def numeric_sort_key(value):
@@ -78,7 +83,12 @@ def register_sample(sample_id, marker_paths):
     )
 
     print(f"[{sample_id}] Running registration...")
-    registrar.register()
+    rigid_registrar, non_rigid_registrar, error_df = registrar.register()
+    if rigid_registrar is None:
+        raise RuntimeError(
+            "VALIS registration failed before slide warping. "
+            "See the traceback above for the registration error."
+        )
 
     print(f"[{sample_id}] Warping and saving registered OME-TIFFs...")
     registrar.warp_and_save_slides(registered_slide_dst_dir, crop=CROP_MODE)

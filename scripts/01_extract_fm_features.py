@@ -17,18 +17,29 @@ from torchvision import transforms
 from tqdm.auto import tqdm
 from skimage.color import rgb2hed
 
+from config_utils import get_markers, load_config, parse_config_arg, resolve_path
+
+
+args = parse_config_arg("Extract patch-level features and DAB scores from OME-TIFF crops.")
+config = load_config(args.config)
+
 # --- Paths ---
-CROPS_DIR = "/Users/lollija/phd/fbxw7/crops"
-ANN_DIR   = "/Users/lollija/phd/fbxw7/annotation"
-OUTPUT_DIR = "/Users/lollija/phd/fbxw7/results_per_sample"
+CROPS_DIR = resolve_path(config, "crops_dir")
+ANN_DIR = resolve_path(config, "annotation_dir")
+OUTPUT_DIR = resolve_path(config, "results_per_sample_dir")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # --- Hyperparameters ---
-MARKERS           = ["FBXW7", "MYC", "NICD"]
-PATCH_SIZE        = 224
-BATCH_SIZE        = 32
-BG_THRESHOLD      = 250
-MASK_OVERLAP_FRAC = 0.50  # At least 50% of the patch must be inside the GeoJSON mask
+MARKERS = get_markers(config)
+PATCH_SIZE = config["analysis"]["patch_size"]
+BATCH_SIZE = config["feature_extraction"]["batch_size"]
+BG_THRESHOLD = config["feature_extraction"]["bg_threshold"]
+MASK_OVERLAP_FRAC = config["feature_extraction"]["mask_overlap_frac"]
+MODEL_NAME = config["feature_extraction"]["model_name"]
+PCA_RANK = config["feature_extraction"]["pca_rank"]
+PCA_NITER = config["feature_extraction"]["pca_niter"]
+N_NEIGHBORS = config["feature_extraction"]["n_neighbors"]
+LEIDEN_RESOLUTION = config["feature_extraction"]["leiden_resolution"]
 
 # Get all unique sample IDs by parsing the file names in the crops directory
 crop_files = [f for f in os.listdir(CROPS_DIR) if f.endswith(".ome.tif")]
@@ -38,7 +49,7 @@ print(f"Found {len(sample_ids)} unique samples: {sample_ids}")
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 print(f"Using device: {device}")
 
-model = timm.create_model('hf_hub:JWonderLand/StainNet-Base', pretrained=True)
+model = timm.create_model(MODEL_NAME, pretrained=True)
 model = model.to(device)
 model.eval()
 
@@ -178,8 +189,8 @@ for marker in MARKERS:
         X = all_features.float()
         
         # PCA
-        q_rank = min(128, X.shape[0] - 1)  # safe fallback if sample is tiny
-        U, S, V = torch.pca_lowrank(X, q=q_rank, niter=4)
+        q_rank = min(PCA_RANK, X.shape[0] - 1)  # safe fallback if sample is tiny
+        U, S, V = torch.pca_lowrank(X, q=q_rank, niter=PCA_NITER)
         X_pca = (X @ V).numpy()
         
         # Build AnnData
@@ -193,10 +204,10 @@ for marker in MARKERS:
         
         # Scanpy workflows (Neighbors + Leiden)
         # Using a low n_neighbors fallback if patches are very few
-        k_neigh = min(15, adata.n_obs - 1)
+        k_neigh = min(N_NEIGHBORS, adata.n_obs - 1)
         if k_neigh > 2:
             sc.pp.neighbors(adata, use_rep="X_pca", n_neighbors=k_neigh)
-            sc.tl.leiden(adata, resolution=0.5)
+            sc.tl.leiden(adata, resolution=LEIDEN_RESOLUTION)
         else:
             adata.obs["leiden"] = "0"  # Dummy cluster if literally < 4 patches
 

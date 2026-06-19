@@ -6,15 +6,22 @@ from collections import defaultdict
 import anndata as ad
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd  # <-- NEW: Imported pandas to handle CSV saving
+import pandas as pd
 import squidpy as sq
 
-IN_DIR = "/Users/lollija/phd/fbxw7/results_per_sample_valis_coords"
-OUT_STATS_DIR = "/Users/lollija/phd/fbxw7/spatial_stats_results_marker_status"
+from config_utils import load_config, parse_config_arg, resolve_path
+
+
+args = parse_config_arg("Calculate marker-status spatial neighborhood enrichment.")
+config = load_config(args.config)
+
+IN_DIR = resolve_path(config, "results_per_sample_valis_coords_dir")
+OUT_STATS_DIR = resolve_path(config, "spatial_stats_dir")
 
 # Patch size and spatial graph parameters
-PATCH_SIZE = 224
-RADIUS = PATCH_SIZE * 2  
+PATCH_SIZE = config["analysis"]["patch_size"]
+RADIUS = PATCH_SIZE * config["spatial_stats"]["radius_multiplier"]
+EXCLUDE_ANNOTATION = config["spatial_stats"]["exclude_annotation"]
 
 def parse_adata_path(path):
     filename = os.path.basename(path)
@@ -76,7 +83,7 @@ def main():
         
         # --- FILTER OUT 'NOT TUMOR' PATCHES ---
         if "annotation" in adata_sample.obs.columns:
-            adata_sample = adata_sample[adata_sample.obs["annotation"] != "not tumor"].copy()
+            adata_sample = adata_sample[adata_sample.obs["annotation"] != EXCLUDE_ANNOTATION].copy()
             adata_sample.obs["marker_status"] = adata_sample.obs["marker"].astype(str) + "_" + adata_sample.obs["annotation"].astype(str)
         else:
             print(f"Warning: 'annotation' missing for {sample_id}. Using marker name only.")

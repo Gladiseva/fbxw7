@@ -9,45 +9,19 @@ import pandas as pd
 import tifffile
 from magicgui.widgets import ComboBox, Container, Label, PushButton
 
+from config_utils import get_markers, load_config, parse_config_arg, resolve_path
 
-RESULTS_DIR = "/Users/lollija/phd/fbxw7/results_per_sample"
-CROPS_DIR = "/Users/lollija/phd/fbxw7/crops"
-PATCH_SIZE = 224
 
-MARKERS = ["FBXW7", "MYC", "NICD"]
-ANNOTATIONS = [
-    "unannotated",
-    "mixed",
-    "high",
-    "low",
-    "medium",
-    "medium to high",
-    "low to medium",
-    "not tumor",
-]
+args = parse_config_arg("Annotate per-sample Leiden clusters in Napari.")
+config = load_config(args.config)
 
-CLUSTER_COLORS = [
-    "#1f77b4",
-    "#ff7f0e",
-    "#2ca02c",
-    "#d62728",
-    "#9467bd",
-    "#8c564b",
-    "#e377c2",
-    "#7f7f7f",
-    "#bcbd22",
-    "#17becf",
-    "#aec7e8",
-    "#ffbb78",
-    "#98df8a",
-    "#ff9896",
-    "#c5b0d5",
-    "#c49c94",
-    "#f7b6d2",
-    "#c7c7c7",
-    "#dbdb8d",
-    "#9edae5",
-]
+RESULTS_DIR = resolve_path(config, "results_per_sample_dir")
+CROPS_DIR = resolve_path(config, "crops_dir")
+PATCH_SIZE = config["analysis"]["patch_size"]
+
+MARKERS = get_markers(config)
+ANNOTATIONS = list(config["annotation_ui"]["labels"])
+CLUSTER_COLORS = list(config["annotation_ui"]["cluster_colors"])
 
 
 def numeric_sort_key(value):

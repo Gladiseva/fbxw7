@@ -8,24 +8,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 from valis import registration
 
-ADATA_DIR = "/Users/lollija/phd/fbxw7/results_per_sample_new"
-VALIS_DIR = "/Users/lollija/phd/fbxw7/valis_registered_crops"
-OUT_DIR = "/Users/lollija/phd/fbxw7/results_per_sample_valis_coords"
-PLOTS_DIR = "/Users/lollija/phd/fbxw7/results_per_sample_valis_plots"
+from config_utils import get_markers, load_config, parse_config_arg, resolve_path
 
-MARKERS = ["FBXW7", "MYC", "NICD"]
-PATCH_SIZE = 224
+
+args = parse_config_arg("Warp AnnData patch centroids into VALIS-registered coordinates.")
+config = load_config(args.config)
+
+ADATA_DIR = resolve_path(config, "results_per_sample_dir")
+CROPS_DIR = resolve_path(config, "crops_dir")
+VALIS_DIR = resolve_path(config, "valis_registered_crops_dir")
+OUT_DIR = resolve_path(config, "results_per_sample_valis_coords_dir")
+PLOTS_DIR = resolve_path(config, "results_per_sample_valis_plots_dir")
+
+MARKERS = get_markers(config)
+PATCH_SIZE = config["analysis"]["patch_size"]
 
 # Consistent plotting colors for your specific markers
-MARKER_COLORS = {
-    "FBXW7": "tab:blue",
-    "MYC": "tab:orange",
-    "NICD": "tab:green"
-}
+MARKER_COLORS = dict(config["valis_warp"]["marker_colors"])
 
 # Match the setting used in register_crops_valis.py when saving registered slides.
-CROP = "overlap"
-USE_NON_RIGID = True
+CROP = config["valis_warp"]["crop"]
+USE_NON_RIGID = config["valis_warp"]["use_non_rigid"]
 
 
 def numeric_sort_key(value):
@@ -61,7 +64,7 @@ def get_slide(registrar, sample_id, marker):
     candidates = [
         f"{sample_id}_{marker}.ome.tif",
         f"{sample_id}_{marker}",
-        os.path.join("/Users/lollija/phd/fbxw7/crops", f"{sample_id}_{marker}.ome.tif"),
+        os.path.join(CROPS_DIR, f"{sample_id}_{marker}.ome.tif"),
     ]
 
     for candidate in candidates:
