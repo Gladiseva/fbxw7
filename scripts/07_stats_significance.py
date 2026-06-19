@@ -31,7 +31,7 @@ def calculate_proper_cohort_significance():
                 str_row = str(row_idx)
                 str_col = str(col_idx)
 
-                # --- NEW: DEDUPLICATION FILTER ---
+                # --- DEDUPLICATION FILTER ---
                 # Because the matrix is symmetric (A to B == B to A), 
                 # we strictly enforce alphabetical order. 
                 # This automatically skips exact self-matches and reverse duplicates.
@@ -39,7 +39,7 @@ def calculate_proper_cohort_significance():
                     continue
                 # ---------------------------------
 
-                # --- NEW: HOMOTYPIC MARKER FILTER ---
+                # --- HOMOTYPIC MARKER FILTER ---
                 # Extract the base marker name (e.g., 'FBXW7' from 'FBXW7_high')
                 marker_1_base = str_row.split('_')[0]
                 marker_2_base = str_col.split('_')[0]
